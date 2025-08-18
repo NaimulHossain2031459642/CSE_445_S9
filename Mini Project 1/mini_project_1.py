@@ -14,6 +14,36 @@ features = df[['Accuracy(%)', 'ReactionTime']]
 kmeans = KMeans(n_clusters=2, random_state=42)
 df['ClusterLabel'] = kmeans.fit_predict(features)
 
+# ✅ 2.1 K-means ভিজ্যুয়ালাইজেশন (Scatter Plot)
+plt.figure(figsize=(8,6))
+plt.scatter(df['Accuracy(%)'], df['ReactionTime'], c=df['ClusterLabel'], cmap='viridis', s=80, alpha=0.7, edgecolors='k')
+plt.scatter(kmeans.cluster_centers_[:,0], kmeans.cluster_centers_[:,1], c='red', marker='X', s=200, label='Centroids')
+plt.xlabel("Accuracy (%)")
+plt.ylabel("Reaction Time")
+plt.title("K-means Clustering Result")
+plt.legend()
+plt.show()
+
+# ✅ 2.2 Cluster Bar Chart (Count)
+cluster_counts = df['ClusterLabel'].value_counts().sort_index()
+plt.figure(figsize=(6,5))
+cluster_counts.plot(kind='bar', color=['skyblue','orange'])
+plt.xlabel("Cluster")
+plt.ylabel("Number of Participants")
+plt.title("Number of Participants in Each Cluster")
+plt.xticks([0,1], ["Cluster 0", "Cluster 1"], rotation=0)
+plt.show()
+
+# ✅ 2.3 Cluster অনুযায়ী গড় Accuracy এবং Reaction Time (Mean Values)
+cluster_means = df.groupby('ClusterLabel')[['Accuracy(%)', 'ReactionTime']].mean()
+cluster_means.plot(kind='bar', figsize=(8,6))
+plt.title("Average Accuracy and Reaction Time per Cluster")
+plt.xlabel("Cluster")
+plt.ylabel("Average Value")
+plt.xticks([0,1], ["Cluster 0", "Cluster 1"], rotation=0)
+plt.legend(title="Metrics")
+plt.show()
+
 # 3. ডেটা ভাগ করা
 X_train, X_test, y_train, y_test = train_test_split(features, df['ClusterLabel'], test_size=0.3, random_state=42)
 
