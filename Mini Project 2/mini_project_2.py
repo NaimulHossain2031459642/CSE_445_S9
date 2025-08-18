@@ -7,26 +7,54 @@ from xgboost import XGBClassifier
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
 
-# 1. Data Load
+# 1. ডেটা লোড
 df = pd.read_excel("stroop_test_data.xlsx")
 
-# Column name clean
+# Column নাম ক্লিন
 df.columns = df.columns.str.strip()
 print("Columns:", df.columns.tolist())
 
-# Accuracy value check
+# Accuracy মান চেক
 print(df['Accuracy(%)'].describe())
 
-# 2. Threshold Auto-set (median + small margin)
+# 2. Threshold অটো-সেট (মিডিয়ান + সামান্য মার্জিন)
 auto_threshold = df['Accuracy(%)'].median()
 df['ManualLabel'] = np.where(df['Accuracy(%)'] > auto_threshold, 1, 0)
 
-# If there is still one class left, use the fallback threshold.
+# যদি এখনো এক ক্লাস থাকে, fallback threshold ব্যবহার করো
 if df['ManualLabel'].nunique() < 2:
     fallback_threshold = df['Accuracy(%)'].mean()
     df['ManualLabel'] = np.where(df['Accuracy(%)'] > fallback_threshold, 1, 0)
 
 print("Class distribution:\n", df['ManualLabel'].value_counts())
+
+# ✅ 2.1 Scatter Plot (Manual Labels)
+plt.figure(figsize=(8,6))
+plt.scatter(df['Accuracy(%)'], df['ReactionTime'], c=df['ManualLabel'], cmap='viridis', s=80, alpha=0.7, edgecolors='k')
+plt.xlabel("Accuracy (%)")
+plt.ylabel("Reaction Time")
+plt.title("Scatter Plot: Accuracy vs Reaction Time (Manual Labels)")
+plt.show()
+
+# ✅ 2.2 Bar Chart (Class distribution)
+class_counts = df['ManualLabel'].value_counts().sort_index()
+plt.figure(figsize=(6,5))
+class_counts.plot(kind='bar', color=['skyblue','orange'])
+plt.xlabel("Class")
+plt.ylabel("Number of Participants")
+plt.title("Number of Participants per Class")
+plt.xticks([0,1], ["Class 0", "Class 1"], rotation=0)
+plt.show()
+
+# ✅ 2.3 Mean Accuracy & ReactionTime per Class
+class_means = df.groupby('ManualLabel')[['Accuracy(%)', 'ReactionTime']].mean()
+class_means.plot(kind='bar', figsize=(8,6))
+plt.title("Average Accuracy and Reaction Time per Class")
+plt.xlabel("Class")
+plt.ylabel("Average Value")
+plt.xticks([0,1], ["Class 0", "Class 1"], rotation=0)
+plt.legend(title="Metrics")
+plt.show()
 
 # 3. Statistical Features
 df['Accuracy_mean'] = df['Accuracy(%)'].mean()
